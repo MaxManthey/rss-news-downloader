@@ -1,5 +1,11 @@
+import JsonNewsProtocol.{jsonFormat4, jsonNewsFormat}
+import spray.json.{DefaultJsonProtocol, RootJsonFormat, enrichAny}
+
+import java.time.LocalDateTime
+//import spray.json.DefaultJsonProtocol._
 import sttp.client3._
 import scala.xml.XML
+
 
 object Main {
 
@@ -60,6 +66,7 @@ object Main {
 
 
   def persistSources(links: List[String], backend: SttpBackend[Identity, Any]): Unit = {
+
     println("Amount of links: " + links.length)
     var count = 1
     for(link <- links) {
@@ -67,13 +74,19 @@ object Main {
         case Some(downloadedSource) =>
           saveSource(downloadedSource, link, count)
           count += 1
+        case None => println("Fetch failed")
       }
     }
   }
 
-  def saveSource(source: String, link: String, count: Int) = {
+  def saveSource(article: String, link: String, count: Int) = {
+
     //TODO remove link and count
     println(s"Saving source $count: $link")
     //TODO persist data source
+//    val json = source.toJson
+    val news = JsonNews(article, link, LocalDateTime.now.toString)
+
+    println(news.toJson)
   }
 }

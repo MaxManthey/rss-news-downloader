@@ -9,3 +9,4 @@ lazy val root = (project in file("."))
 
 libraryDependencies += "com.softwaremill.sttp.client3" %% "core" % "3.6.2"
 libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.1.0"
+libraryDependencies += "io.spray" %%  "spray-json" % "1.3.6"
