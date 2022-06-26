@@ -1,8 +1,7 @@
-import JsonNewsProtocol.{jsonFormat4, jsonNewsFormat}
-import spray.json.{DefaultJsonProtocol, RootJsonFormat, enrichAny}
+import JsonNewsProtocol.jsonNewsFormat
+import spray.json.enrichAny
 
 import java.time.LocalDateTime
-//import spray.json.DefaultJsonProtocol._
 import sttp.client3._
 import scala.xml.XML
 
@@ -13,8 +12,9 @@ object Main {
 
     val backend = HttpClientSyncBackend()
 
-    val response = getXml("https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de", backend)
-    println(response)
+    val googleRssNews = "https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de"
+
+    val response = getXml(googleRssNews, backend)
 
     val newsLinks: Option[List[String]] = response match {
       case Some(value) => Some(getLinks(value))
@@ -59,7 +59,6 @@ object Main {
     val newsLinks = for {
       t <- linkNodes
     } yield t.text
-//    newsLinks.foreach(println)
 
     newsLinks.toList
   }
@@ -82,11 +81,11 @@ object Main {
   def saveSource(article: String, link: String, count: Int) = {
 
     //TODO remove link and count
-    println(s"Saving source $count: $link")
     //TODO persist data source
+//    println(s"Saving source $count: $link")
 //    val json = source.toJson
-    val news = JsonNews(article, link, LocalDateTime.now.toString)
+    val jsonNews = JsonNews(article, link, LocalDateTime.now.toString)
 
-    println(news.toJson)
+    println(jsonNews.toJson)
   }
 }
