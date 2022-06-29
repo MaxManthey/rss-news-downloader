@@ -16,7 +16,7 @@ object Main {
 
     val response = getXml(googleRssNews, backend)
 
-    val newsLinks: Option[List[String]] = response match {
+    val newsLinks: Option[Seq[String]] = response match {
       case Some(value) => Some(getLinks(value))
       case None =>
         println("Fetching the google news feed has failed.")
@@ -52,7 +52,7 @@ object Main {
   }
 
 
-  def getLinks(response: String): List[String] = {
+  def getLinks(response: String): Seq[String] = {
 
     val xml = XML.loadString(response)
     val linkNodes = (xml \\ "item" \ "link")
@@ -60,11 +60,11 @@ object Main {
       t <- linkNodes
     } yield t.text
 
-    newsLinks.toList
+    newsLinks
   }
 
 
-  def persistSources(links: List[String], backend: SttpBackend[Identity, Any]): Unit = {
+  def persistSources(links: Seq[String], backend: SttpBackend[Identity, Any]): Unit = {
 
     println("Amount of links: " + links.length)
     var count = 1
