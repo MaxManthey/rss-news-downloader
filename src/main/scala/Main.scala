@@ -1,8 +1,9 @@
 import JsonNewsProtocol.jsonNewsFormat
 import spray.json.enrichAny
-
 import java.time.LocalDateTime
 import sttp.client3._
+import java.io.{BufferedWriter, File, FileWriter}
+import java.security.MessageDigest
 import scala.xml.XML
 
 
@@ -67,25 +68,33 @@ object Main {
   def persistSources(links: Seq[String], backend: SttpBackend[Identity, Any]): Unit = {
 
     println("Amount of links: " + links.length)
-    var count = 1
     for(link <- links) {
       getXml(link, backend) match {
         case Some(downloadedSource) =>
-          saveSource(downloadedSource, link, count)
-          count += 1
+          saveSource(downloadedSource, link)
         case None => println("Fetch failed")
       }
     }
   }
 
-  def saveSource(article: String, link: String, count: Int) = {
+  def saveSource(article: String, link: String) = {
 
-    //TODO remove link and count
-    //TODO persist data source
-//    println(s"Saving source $count: $link")
-//    val json = source.toJson
-    val jsonNews = JsonNews(article, link, LocalDateTime.now.toString)
+    val jsonNews = JsonNews(article, link, LocalDateTime.now.toString).toJson.prettyPrint
 
-    println(jsonNews.toJson)
+    // File name and path from hashed link
+    val fileName = MessageDigest.getInstance("MD5")
+      .digest(link.getBytes).map("%02x".format(_)).mkString + ".json"
+    println(s"file name: $fileName")
+    val filePath = "../news-files/" + fileName
+
+    try {
+      val file = new File(filePath)
+      val bw = new BufferedWriter(new FileWriter(file))
+      bw.write(jsonNews)
+      bw.close()
+    } catch {
+      case ex: Exception =>
+        ex.printStackTrace()
+    }
   }
 }
