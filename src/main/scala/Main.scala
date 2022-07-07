@@ -14,34 +14,6 @@ object Main {
 
     val backend = HttpClientSyncBackend()
 
-//    /* Extractor experiments
-//    val link = "https://news.google.com/__i/rss/rd/articles/CBMiOmh0dHBzOi8vd3d3LnRhZ2Vzc2NoYXUuZGUvd2lydHNjaGFmdC9ldS10YXhvbm9taWUtMTA3Lmh0bWzSAQA?oc=5"
-//    val link = "https://news.google.com/__i/rss/rd/articles/CBMie2h0dHBzOi8vd3d3LmZhei5uZXQvYWt0dWVsbC9wb2xpdGlrL2F1c2xhbmQvYm9yaXMtam9obnNvbi1zdGltbXQtcnVlY2t0cml0dC1hbHMtYnJpdGlzY2hlci1wcmVtaWVybWluaXN0ZXItenUtMTgxNTU2OTIuaHRtbNIBfWh0dHBzOi8vbS5mYXoubmV0L2FrdHVlbGwvcG9saXRpay9hdXNsYW5kL2JvcmlzLWpvaG5zb24tc3RpbW10LXJ1ZWNrdHJpdHQtYWxzLWJyaXRpc2NoZXItcHJlbWllcm1pbmlzdGVyLXp1LTE4MTU1NjkyLmFtcC5odG1s?oc=5"
-    val link = "https://news.google.com/__i/rss/rd/articles/CBMiU2h0dHBzOi8vd3d3LnN1ZWRkZXV0c2NoZS5kZS9wb2xpdGlrL2cyMC1naXBmZWwtYmFsaS1hdXNzZW5taW5pc3Rlci1sYXdyb3ctMS41NjE2MDc50gEA?oc=5"
-    println(link)
-    val article: String = getXml(link, backend) match {
-      case Some(value) => value
-      case None => "failed"
-    }
-    val defaultEx = DefaultExtractor.INSTANCE.getText(article)
-    println("\n\nDEFAULT EXTRACTOR")
-    println(defaultEx)
-    val canolaEx = CanolaExtractor.INSTANCE.getText(article)
-    println("\n\nCANOLA EXTRACTOR")
-    println(canolaEx.split('\n').mkString("", " ", "").split(" ").filter(el => el.nonEmpty && !Stopwort.stopwortList.contains(el)).toList)
-    val test = canolaEx.split('\n').mkString("", " ", "").split(" ")
-    println(canolaEx.split('\n').mkString("", " ", "").split(" ").toList.length)
-    val test2 = test.map(el => {
-      if(el(el.length-1) == '.' || el(el.length-1) == '!' || el(el.length-1) == '?' || el(el.length-1) == ',' || el(el.length-1) == ':' || el(el.length-1) == ')') el.dropRight(1)
-      else el
-    }).map(el => if(el.head == '(') el.drop(1) else el).filter(el => !Stopwort.stopwortList.contains(el.toLowerCase)).toList
-    println(test2)
-    println(test2.length)
-
-//    println(canolaEx.split("\n").mkString("", ", ", ")").split(" ").mkString("Array(", ", ", ")"))
-//    */
-
-
     val googleRssNews = "https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de"
 
     val response = getXml(googleRssNews, backend)
@@ -108,26 +80,53 @@ object Main {
 
   def saveSource(article: String, link: String): Unit = {
 
-    val jsonNews = JsonNews(article, link, LocalDateTime.now.toString).toJson.prettyPrint
-
     // File name and path from hashed link
     val fileName = MessageDigest.getInstance("MD5")
       .digest(link.getBytes).map("%02x".format(_)).mkString + ".json"
     println(s"file name: $fileName, link: $link")
-    val filePath = "../news-files/" + fileName
 
-    //Save file in folder "../news-files/"
+    //Save html file in folder "../news-files/"
     /*
+    val filePath = "../news-files/" + fileName
+    val newsFiles = JsonNews(article, link, LocalDateTime.now.toString).toJson.prettyPrint
     try {
       val file = new File(filePath)
       val bw = new BufferedWriter(new FileWriter(file))
-      bw.write(jsonNews)
+      bw.write(newsFiles)
       bw.close()
     } catch {
       case ex: Exception =>
         ex.printStackTrace()
     }
-//     */
+//    */
 
+    //Save filtered string in folder "../news-json"
+    /*
+    val filePath = "../news-json/" + fileName
+    val processedString = htmlToContentString(article)
+    val newsJson = JsonNews(processedString, link, LocalDateTime.now.toString).toJson.prettyPrint
+    try {
+      val file = new File(filePath)
+      val bw = new BufferedWriter(new FileWriter(file))
+      bw.write(newsJson)
+      bw.close()
+    } catch {
+      case ex: Exception =>
+        ex.printStackTrace()
+    }
+//    */
+  }
+
+  def htmlToContentString(htlmlArticle: String): String = {
+
+    val canolaEx = CanolaExtractor.INSTANCE.getText(htlmlArticle)
+    val filteredText = canolaEx.split('\n').mkString("", " ", "").split(" ")
+      .map(el => {
+        if(el.nonEmpty && Stopwort.miscList.contains(el(el.length-1))) el.dropRight(1)
+        else el
+      })
+      .map(el => if(el.nonEmpty && Stopwort.miscList.contains(el.head)) el.drop(1) else el)
+      .filter(el => el.nonEmpty && !Stopwort.stopwortList.contains(el.toLowerCase)).mkString("", " ", "")
+    filteredText
   }
 }
