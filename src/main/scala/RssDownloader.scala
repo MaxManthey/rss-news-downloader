@@ -73,6 +73,7 @@ object RssDownloader {
     }
   }
 
+  
   def saveSource(article: String, link: String): Unit = {
 
     // File name and path from hashed link
