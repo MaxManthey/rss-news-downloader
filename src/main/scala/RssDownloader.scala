@@ -5,30 +5,25 @@ import sttp.client3._
 import java.io.{BufferedWriter, File, FileWriter}
 import java.security.MessageDigest
 import scala.xml.XML
-import de.l3s.boilerpipe.extractors._
 
 
-object Main {
+object RssDownloader {
 
   def main(args: Array[String]): Unit = {
 
     val backend = HttpClientSyncBackend()
 
     val googleRssNews = "https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de"
-
     val response = getXml(googleRssNews, backend)
 
-    val newsLinks: Option[Seq[String]] = response match {
-      case Some(value) => Some(getLinks(value))
-      case None =>
-        println("Fetching the google news feed has failed.")
-        None
+    val newsLinks: Seq[String] = response match {
+      case Some(value) => getLinks(value)
+      case None => Seq()
     }
 
-    newsLinks match {
-      case Some(links) => persistSources(links, backend)
+    if(newsLinks.nonEmpty) {
+      persistSources(newsLinks, backend)
     }
-
   }
 
 
@@ -86,7 +81,6 @@ object Main {
     println(s"file name: $fileName, link: $link")
 
     //Save html file in folder "../news-files/"
-    /*
     val filePath = "../news-files/" + fileName
     val newsFiles = JsonNews(article, link, LocalDateTime.now.toString).toJson.prettyPrint
     try {
@@ -98,35 +92,5 @@ object Main {
       case ex: Exception =>
         ex.printStackTrace()
     }
-//    */
-
-    //Save filtered string in folder "../news-json"
-    /*
-    val filePath = "../news-json/" + fileName
-    val processedString = htmlToContentString(article)
-    val newsJson = JsonNews(processedString, link, LocalDateTime.now.toString).toJson.prettyPrint
-    try {
-      val file = new File(filePath)
-      val bw = new BufferedWriter(new FileWriter(file))
-      bw.write(newsJson)
-      bw.close()
-    } catch {
-      case ex: Exception =>
-        ex.printStackTrace()
-    }
-//    */
-  }
-
-  def htmlToContentString(htlmlArticle: String): String = {
-
-    val canolaEx = CanolaExtractor.INSTANCE.getText(htlmlArticle)
-    val filteredText = canolaEx.split('\n').mkString("", " ", "").split(" ")
-      .map(el => {
-        if(el.nonEmpty && Stopwort.miscList.contains(el(el.length-1))) el.dropRight(1)
-        else el
-      })
-      .map(el => if(el.nonEmpty && Stopwort.miscList.contains(el.head)) el.drop(1) else el)
-      .filter(el => el.nonEmpty && !Stopwort.stopwortList.contains(el.toLowerCase)).mkString("", " ", "")
-    filteredText
   }
 }
