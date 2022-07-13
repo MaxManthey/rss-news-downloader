@@ -26,3 +26,6 @@ target/
 
 # general
 *.class
+
+#logs
+output.log

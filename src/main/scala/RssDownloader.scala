@@ -47,7 +47,6 @@ object RssDownloader {
         None
       case _ =>
         logger.error("Unknown error trying to fetch xml")
-        logger.error(_)
         None
     }
     response
