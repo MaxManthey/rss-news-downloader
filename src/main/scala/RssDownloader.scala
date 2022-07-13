@@ -1,4 +1,5 @@
 import JsonNewsProtocol.jsonNewsFormat
+import com.typesafe.scalalogging.Logger
 import spray.json.enrichAny
 import java.time.LocalDateTime
 import sttp.client3._
@@ -8,7 +9,9 @@ import scala.xml.XML
 
 
 object RssDownloader {
+  val logger: Logger = Logger("RSS Logger")
 
+  //TODO create continuous loop
   def main(args: Array[String]): Unit = {
 
     val backend = HttpClientSyncBackend()
@@ -34,15 +37,17 @@ object RssDownloader {
       getRequest match {
         case Right(value) => Some(value)
         case Left(value) =>
-          println("Fetch failed: " + value)
+          logger.error("Fetching XML has failed: " + value)
           None
       }
     } catch {
       case e: Exception =>
-        println("Exception trying to reach fetch xml: " + e)
+        logger.error("Exception trying to fetch xml")
+        e.printStackTrace()
         None
       case _ =>
-        println("Unknown error trying to fetch xml")
+        logger.error("Unknown error trying to fetch xml")
+        logger.error(_)
         None
     }
     response
@@ -63,34 +68,34 @@ object RssDownloader {
 
   def persistSources(links: Seq[String], backend: SttpBackend[Identity, Any]): Unit = {
 
-    println("Amount of links: " + links.length)
     for(link <- links) {
       getXml(link, backend) match {
         case Some(downloadedSource) =>
           saveSource(downloadedSource, link)
-        case None => println("Fetch failed")
+        case None => logger.error("Source will not be persisted, because fetch has failed")
       }
     }
   }
 
-  
+
   def saveSource(article: String, link: String): Unit = {
 
     // File name and path from hashed link
     val fileName = MessageDigest.getInstance("MD5")
       .digest(link.getBytes).map("%02x".format(_)).mkString + ".json"
-    println(s"file name: $fileName, link: $link")
+    val filePath = "../news-files/" + fileName
 
     //Save html file in folder "../news-files/"
-    val filePath = "../news-files/" + fileName
-    val newsFiles = JsonNews(article, link, LocalDateTime.now.toString).toJson.prettyPrint
     try {
+      val newsFiles = JsonNews(article, link, LocalDateTime.now.toString).toJson.prettyPrint
       val file = new File(filePath)
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write(newsFiles)
       bw.close()
+      logger.info(s"Successfully saved file: $fileName, with link: $link")
     } catch {
       case ex: Exception =>
+        logger.error(s"Failed to save file: $fileName, with link: $link")
         ex.printStackTrace()
     }
   }
