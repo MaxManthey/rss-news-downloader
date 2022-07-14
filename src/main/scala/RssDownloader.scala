@@ -9,7 +9,9 @@ import scala.xml.XML
 
 
 object RssDownloader {
+
   val logger: Logger = Logger("RSS Logger")
+
 
   def main(args: Array[String]): Unit = {
 
@@ -86,7 +88,7 @@ object RssDownloader {
 
     //Save html file in folder "../news-files/"
     try {
-      val newsFiles = JsonNews(article, link, LocalDateTime.now).convertToJsonFormat().toJson.prettyPrint
+      val newsFiles = JsonNews(article, link, LocalDateTime.now.toString).toJson.prettyPrint
       val file = new File(filePath)
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write(newsFiles)
