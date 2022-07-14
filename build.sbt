@@ -12,3 +12,4 @@ libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.1.0"
 libraryDependencies += "io.spray" %%  "spray-json" % "1.3.6"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.11"
 libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.12" % Test
