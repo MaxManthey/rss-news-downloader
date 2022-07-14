@@ -1,6 +1,6 @@
-import JsonNewsProtocol.jsonNewsFormat
 import com.typesafe.scalalogging.Logger
 import spray.json.enrichAny
+import JsonNewsProtocol.jsonNewsFormat
 import java.time.LocalDateTime
 import sttp.client3._
 import java.io.{BufferedWriter, File, FileWriter}
@@ -11,7 +11,6 @@ import scala.xml.XML
 object RssDownloader {
   val logger: Logger = Logger("RSS Logger")
 
-  //TODO create continuous loop
   def main(args: Array[String]): Unit = {
 
     val backend = HttpClientSyncBackend()
@@ -42,11 +41,12 @@ object RssDownloader {
       }
     } catch {
       case e: Exception =>
-        logger.error("Exception trying to fetch xml")
+        logger.error("Exception trying to fetch xml with uri: " + uri)
+        logger.error(e.toString)
         e.printStackTrace()
         None
       case _ =>
-        logger.error("Unknown error trying to fetch xml")
+        logger.error("Unknown error trying to fetch xml with uri: " + uri)
         None
     }
     response
@@ -86,7 +86,7 @@ object RssDownloader {
 
     //Save html file in folder "../news-files/"
     try {
-      val newsFiles = JsonNews(article, link, LocalDateTime.now.toString).toJson.prettyPrint
+      val newsFiles = JsonNews(article, link, LocalDateTime.now).convertToJsonFormat().toJson.prettyPrint
       val file = new File(filePath)
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write(newsFiles)
