@@ -1,11 +1,10 @@
 import org.scalatest.funsuite.AnyFunSuite
-import sttp.client3.{HttpClientSyncBackend, Identity, SttpBackend}
 
 class RssDownloaderTest extends AnyFunSuite {
 
-  val backend: SttpBackend[Identity, Any] = HttpClientSyncBackend()
-
   test("Correct XML being downloaded") {
+
+    //TODO mock download
     val cernXML = """<html><head></head><body><header>
                     |<title>http://info.cern.ch</title>
                     |</header>
@@ -19,7 +18,7 @@ class RssDownloaderTest extends AnyFunSuite {
                     |<li><a href="http://home.web.cern.ch/about">Learn about CERN, the physics laboratory where the web was born</a></li>
                     |</ul>
                     |</body></html>""".stripMargin
-    val cernDownload = RssDownloader.getXml("http://info.cern.ch/", backend) match {
+    val cernDownload = RssDownloader.getXml("http://info.cern.ch/") match {
       case Some(value) => value
       case None => "Failed"
     }
@@ -28,8 +27,10 @@ class RssDownloaderTest extends AnyFunSuite {
 
 
   test("Correct amount of links") {
+
+    //TODO mock download
     val googleRssNews = "https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de"
-    val googleResponse = RssDownloader.getXml(googleRssNews, backend)
+    val googleResponse = RssDownloader.getXml(googleRssNews)
 
     val newsLinks: Seq[String] = googleResponse match {
       case Some(value) => RssDownloader.getLinks(value)
