@@ -3,7 +3,7 @@ import spray.json.enrichAny
 import JsonNewsProtocol.jsonNewsFormat
 import java.time.LocalDateTime
 
-class JsonNewsTest extends AnyFunSuite {
+class NewsTest extends AnyFunSuite {
 
   test("Matching JSON Object") {
     val currentTime = LocalDateTime.now.toString
@@ -12,7 +12,7 @@ class JsonNewsTest extends AnyFunSuite {
                    |  "dateTime": "$currentTime",
                    |  "source": "source"
                    |}""".stripMargin
-    val jsonNews = JsonNews("article", "source", currentTime).toJson.prettyPrint
+    val jsonNews = News("article", "source", currentTime).toJson.prettyPrint
 
     assert(jsonNews === result)
   }
@@ -24,7 +24,7 @@ class JsonNewsTest extends AnyFunSuite {
                     |  "dateTime": "2022-07-15T00:05:02.118687",
                     |  "source": "link"
                     |}""".stripMargin
-    val jsonNews = JsonNews("article", "source", LocalDateTime.now().toString).toJson.prettyPrint
+    val jsonNews = News("article", "source", LocalDateTime.now().toString).toJson.prettyPrint
 
     assert(jsonNews != result)
   }

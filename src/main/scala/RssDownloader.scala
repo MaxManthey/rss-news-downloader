@@ -10,28 +10,27 @@ import scala.xml.XML
 
 object RssDownloader {
 
-  val logger: Logger = Logger("RSS Logger")
-
+  private val logger: Logger = Logger("RSS Logger")
+  private val backend = HttpClientSyncBackend()
+  private val googleRssNews = "https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de"
+  private val newsFolderPath = "../news-files/"
 
   def main(args: Array[String]): Unit = {
 
-    val backend = HttpClientSyncBackend()
+    val rssText = getXml(googleRssNews)
 
-    val googleRssNews = "https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de"
-    val response = getXml(googleRssNews, backend)
-
-    val newsLinks: Seq[String] = response match {
+    val newsLinks: Seq[String] = rssText match {
       case Some(value) => getLinks(value)
       case None => Seq()
     }
 
     if(newsLinks.nonEmpty) {
-      persistSources(newsLinks, backend)
+      persistSources(newsLinks)
     }
   }
 
 
-  def getXml(uri: String, backend: SttpBackend[Identity, Any]): Option[String] = {
+  def getXml(uri: String): Option[String] = {
 
     val response:  Option[String] = try {
       val getRequest = basicRequest.get(uri"$uri").send(backend).body
@@ -55,22 +54,14 @@ object RssDownloader {
   }
 
 
-  def getLinks(response: String): Seq[String] = {
-
-    val xml = XML.loadString(response)
-    val linkNodes = (xml \\ "item" \ "link")
-    val newsLinks = for {
-      t <- linkNodes
-    } yield t.text
-
-    newsLinks
-  }
+  def getLinks(rssText: String): Seq[String] =
+    (XML.loadString(rssText) \\ "item" \ "link").map(link => link.text)
 
 
-  def persistSources(links: Seq[String], backend: SttpBackend[Identity, Any]): Unit = {
+  def persistSources(links: Seq[String]): Unit = {
 
     for(link <- links) {
-      getXml(link, backend) match {
+      getXml(link) match {
         case Some(downloadedSource) =>
           saveSource(downloadedSource, link)
         case None => logger.error("Source will not be persisted, because fetch has failed")
@@ -84,11 +75,11 @@ object RssDownloader {
     // File name and path from hashed link
     val fileName = MessageDigest.getInstance("MD5")
       .digest(link.getBytes).map("%02x".format(_)).mkString + ".json"
-    val filePath = "../news-files/" + fileName
+    val filePath = newsFolderPath + fileName
 
     //Save html file in folder "../news-files/"
     try {
-      val newsFiles = JsonNews(article, link, LocalDateTime.now.toString).toJson.prettyPrint
+      val newsFiles = News(article, link, LocalDateTime.now.toString).toJson.prettyPrint
       val file = new File(filePath)
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write(newsFiles)
