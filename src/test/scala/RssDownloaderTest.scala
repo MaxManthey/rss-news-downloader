@@ -18,7 +18,7 @@ class RssDownloaderTest extends AnyFunSuite {
                     |<li><a href="http://home.web.cern.ch/about">Learn about CERN, the physics laboratory where the web was born</a></li>
                     |</ul>
                     |</body></html>""".stripMargin
-    val cernDownload = RssDownloader.getXml("http://info.cern.ch/") match {
+    val cernDownload = new XmlHandler().downloadXml("http://info.cern.ch/") match {
       case Some(value) => value
       case None => "Failed"
     }
@@ -30,10 +30,10 @@ class RssDownloaderTest extends AnyFunSuite {
 
     //TODO mock download
     val googleRssNews = "https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de"
-    val googleResponse = RssDownloader.getXml(googleRssNews)
+    val googleResponse = new XmlHandler().downloadXml(googleRssNews)
 
     val newsLinks: Seq[String] = googleResponse match {
-      case Some(value) => RssDownloader.getLinks(value)
+      case Some(value) => new XmlHandler().getLinksFromRssFeed(value)
       case None => Seq()
     }
 
