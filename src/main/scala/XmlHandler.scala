@@ -15,9 +15,8 @@ class XmlHandler {
 
   def downloadXml(uri: String): Option[String] = {
 
-    val response:  Option[String] = try {
-      val getRequest = basicRequest.get(uri"$uri").send(backend).body
-      getRequest match {
+    val xmlResponse: Option[String] = try {
+      basicRequest.get(uri"$uri").send(backend).body match {
         case Right(value) => Some(value)
         case Left(value) =>
           logger.error("Fetching XML has failed: " + value)
@@ -33,6 +32,6 @@ class XmlHandler {
         logger.error("Unknown error trying to fetch xml with uri: " + uri)
         None
     }
-    response
+    xmlResponse
   }
 }
