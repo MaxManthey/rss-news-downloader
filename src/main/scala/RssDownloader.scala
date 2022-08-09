@@ -2,16 +2,12 @@ import com.typesafe.scalalogging.Logger
 
 
 object RssDownloader {
-
   private val logger: Logger = Logger("RssDownloader Logger")
-  private val rssGoogleNews = "https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de"
   private val xmlHandler = new XmlHandler
-  private val persistenceHandler = new PersistenceHandler
 
 
   def main(args: Array[String]): Unit = {
-
-    val rssText = xmlHandler.downloadXml(rssGoogleNews)
+    val rssText = xmlHandler.downloadXml(args(0))
 
     val newsLinks: Seq[String] = rssText match {
       case Some(value) => xmlHandler.getLinksFromRssFeed(value)
@@ -19,7 +15,7 @@ object RssDownloader {
     }
 
     if(newsLinks.nonEmpty) {
-      persistenceHandler.downloadAndPersistSources(newsLinks)
+      PersistenceHandler(args(1)).downloadAndPersistSources(newsLinks)
     } else {
       logger.error("No links could be extracted from RSS feed")
     }

@@ -6,15 +6,12 @@ import JsonNewsProtocol.jsonNewsFormat
 import java.time.LocalDateTime
 
 
-class PersistenceHandler {
-
+case class PersistenceHandler(newsFilesFolderPath: String) {
   private val logger: Logger = Logger("PersistenceHandler Logger")
-  private val newsFilesFolderPath = "../news-files/"
   private val fileEnding = ".json"
 
 
   def downloadAndPersistSources(links: Seq[String]): Unit = {
-
     val xmlHandler = new XmlHandler
 
     for(link <- links) {
@@ -27,13 +24,12 @@ class PersistenceHandler {
 
 
   private def saveSourceToFile(article: String, link: String): Unit = {
-
     // File name and path from hashed link
     val fileName = MessageDigest.getInstance("MD5")
       .digest(link.getBytes).map("%02x".format(_)).mkString
     val filePath = newsFilesFolderPath + fileName + fileEnding
 
-    //Save html file in folder "../news-files/"
+    //Save html file in provided folder
     try {
       val newsJson = News(article, link, LocalDateTime.now.toString).toJson.prettyPrint
       val jsonFile = new File(filePath)

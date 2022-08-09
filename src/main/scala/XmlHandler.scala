@@ -4,7 +4,6 @@ import scala.xml.XML
 
 
 class XmlHandler {
-
   private val logger: Logger = Logger("XmlHandler Logger")
   private val backend = HttpClientSyncBackend()
 
@@ -14,7 +13,6 @@ class XmlHandler {
 
 
   def downloadXml(uri: String): Option[String] = {
-
     val xmlResponse: Option[String] = try {
       basicRequest.get(uri"$uri").send(backend).body match {
         case Right(value) => Some(value)
