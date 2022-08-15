@@ -7,6 +7,11 @@ object RssDownloader {
 
 
   def main(args: Array[String]): Unit = {
+    if(args.length != 2) {
+      logger.error("Amount of args incorrect. For more details, please refer to the readme.")
+      sys.exit(1)
+    }
+
     val rssText = xmlHandler.downloadXml(args(0))
 
     val newsLinks: Seq[String] = rssText match {
