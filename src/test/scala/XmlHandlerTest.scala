@@ -152,11 +152,12 @@ class XmlHandlerTest extends AnyFunSuite with MockFactory {
                             |</item>
                             |</channel>
                             |</rss>""".stripMargin
-  private val mockXmlHandler = mock[XmlHandler]
-  (mockXmlHandler.downloadXml _).expects(*).returning(Option(googleRssXml)).once()
 
 
   test("Correct XML being downloaded") {
+    val mockXmlHandler = mock[XmlHandler]
+    (mockXmlHandler.downloadXml _).expects(*).returning(Option(googleRssXml)).once()
+
     val cernDownload = mockXmlHandler.downloadXml(googleRssNews) match {
       case Some(value) => value
       case None => "Failed"
@@ -167,13 +168,14 @@ class XmlHandlerTest extends AnyFunSuite with MockFactory {
 
 
   test("getLinksFromRssFeed produces correct amount of links") {
+    val mockXmlHandler = mock[XmlHandler]
+    (mockXmlHandler.downloadXml _).expects(*).returning(Option(googleRssXml)).once()
     val xmlHandler = new XmlHandler()
 
     val googleResponse = mockXmlHandler.downloadXml(googleRssNews)
 
     val newsLinks: Seq[String] = googleResponse match {
       case Some(value) =>
-        println(value)
         xmlHandler.getLinksFromRssFeed(value)
       case None => Seq()
     }
