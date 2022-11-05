@@ -7,6 +7,8 @@ object RssDownloader {
 
 
   def main(args: Array[String]): Unit = {
+    val timer = System.nanoTime
+
     if(args.length != 2) {
       println("Amount of args incorrect. For more details, please refer to the readme.")
       logger.error("Amount of args incorrect. For more details, please refer to the readme.")
@@ -16,14 +18,20 @@ object RssDownloader {
     val rssText = xmlHandler.downloadXml(args(0))
 
     val newsLinks: Seq[String] = rssText match {
-      case Some(value) => xmlHandler.getLinksFromRssFeed(value)
+      case Some(value) => println(value)
+        xmlHandler.getLinksFromRssFeed(value)
       case None => Seq()
     }
 
     if(newsLinks.nonEmpty) {
-      PersistenceHandler(args(1)).downloadAndPersistSources(newsLinks)
+      val persistenceHandler = PersistenceHandler(args(1))
+
+      persistenceHandler.downloadAndPersistSources(newsLinks)
     } else {
       logger.error("No links could be extracted from RSS feed")
     }
+
+    val duration = (System.nanoTime - timer) / 1e9d
+    println(duration + "sec")
   }
 }
